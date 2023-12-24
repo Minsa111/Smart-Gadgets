@@ -2,7 +2,7 @@
     $host = 'localhost';
     $username  = 'root';
     $password = '';
-    $db = 'latihan';
+    $db = 'tubes';
 
     $koneksi = mysqli_connect($host, $username, $password, $db);
 
@@ -17,8 +17,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Ensure values are not null before inserting into the database
         if ($temperature !== null && $state !== null) {
-            $stmt = $koneksi->prepare("INSERT INTO mpu (temperature, state) VALUES (?,  ?)");
-            $stmt->bind_param("ds", $temperature, $state);
+            $stmt = $koneksi->prepare("INSERT INTO temperature (temperature, state) VALUES (?,  ?)");
+            $stmt->bind_param("fs", $temperature, $state);
 
             try {
                 $stmt->execute();
