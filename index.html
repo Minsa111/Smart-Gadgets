@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Temperature Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Real-time Temperature Chart</h1>
+    <canvas id="temperatureChart" width="400" height="200"></canvas>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var ctx = document.getElementById('temperatureChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [1,2,3,4],
+                    datasets: [{
+                        label: 'Temperature (°C)',
+                        borderColor: 'rgb(75, 192, 192)',
+                        data: [20,24,23,31],
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    width: 400,
+                    height: 200,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom'
+                        },
+                        y: {
+                            min: 0,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            function updateChart() {
+                fetch('https://localhost:8000/display.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            // Extract timestamps and temperatures
+                            var timestamps = data.map(entry => new Date(entry.timestamp).toLocaleTimeString());
+                            var temperatures = data.map(entry => entry.temperature);
+
+                            // Update chart data
+                            chart.data.labels = timestamps;
+                            chart.data.datasets[0].data = temperatures;
+
+                            // Update the chart
+                            chart.update();
+                        } else {
+                            console.error('No data received from the server.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data:', error);
+                    });
+            }
+
+            // Initial chart update
+            updateChart();
+
+            // Set interval to update the chart every 3 seconds
+            setInterval(updateChart, 3000);
+        });
+    </script>
+</body>
+</html>
