@@ -1,24 +1,25 @@
 <?php
-    $host = 'localhost';
-    $username  = 'root';
-    $password = '';
-    $db = 'tubes';
+$host = 'localhost';
+$username = 'root';
+$password = '';
+$db = 'tubes';
 
-    $koneksi = mysqli_connect($host, $username, $password, $db);
+$koneksi = mysqli_connect($host, $username, $password, $db);
 
-    if (!$koneksi) {
-        echo "Gagal melakukan koneksi ke MYSQL: " . mysqli_connect_error();
-    }
+if (!$koneksi) {
+    echo "Gagal melakukan koneksi ke MYSQL: " . mysqli_connect_error();
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Check if the keys are set in the POST request
-    if (isset($_POST["temperature"])  && isset($_POST["state"])) {
+    if (isset($_POST["temperature"]) && isset($_POST["state"])) {
         $temperature = $_POST["temperature"];
         $state = $_POST["state"];
 
         // Ensure values are not null before inserting into the database
         if ($temperature !== null && $state !== null) {
             $stmt = $koneksi->prepare("INSERT INTO temperature (temperature, state) VALUES (?,  ?)");
-            $stmt->bind_param("fs", $temperature, $state);
+            $stmt->bind_param("ds", $temperature, $state);
 
             try {
                 $stmt->execute();
@@ -26,7 +27,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             } catch (mysqli_sql_exception $e) {
                 echo "Error: " . $e->getMessage();
             }
-
             $stmt->close();
         } else {
             echo "Invalid data received";
@@ -34,7 +34,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         echo "Invalid POST data";
     }
-}
+} 
+
 
 $koneksi->close();
 ?>

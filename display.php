@@ -1,16 +1,3 @@
-<?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "tubes";
-$conn = new mysqli($servername, $username, $password, $dbname);
-
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
-?>
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -27,26 +14,36 @@ if ($conn->connect_error) {
     </style>
 </head>
 <body>
+    <?php
+        $servername = "localhost";
+        $username = "root";
+        $password = "";
+        $dbname = "tubes";
+        $conn = new mysqli($servername, $username, $password, $dbname);
+
+        if ($conn->connect_error) {
+            die("Connection failed: " . $conn->connect_error);
+        }
+    ?>
     <h1>Real-time Temperature Chart</h1>
     <?php
 // API endpoint to get temperature data
-        $result = $conn->query("SELECT * FROM temperature ORDER BY timestamp DESC LIMIT 10");
-        $data = [];
-
+        $result = $conn->query("SELECT * FROM temperature ORDER BY id DESC LIMIT 10");
         while ($row = $result->fetch_assoc()) {
             $resultArray[] = array(
                 'x' => $row['timestamp'],
                 'y' => $row['temperature']
             );
         }
-        $conn->close();
     ?>
     <div class = "chartBox">
         <canvas id="temperatureChart"></canvas>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js/dist/Chart.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script><!-- Include jQuery from a CDN -->
+
 
 <script>
     const temperatureData = <?php echo json_encode($resultArray); ?>;
@@ -67,6 +64,7 @@ if ($conn->connect_error) {
         type:'line',
         scales: {
             x: {
+                max:10,
                 type: 'time',
                 time: {
                     unit: 'second' // Adjust the unit as needed (e.g., 'minute', 'hour', 'day')
@@ -77,8 +75,6 @@ if ($conn->connect_error) {
                 }
             },
             y: {
-                min: 0,
-                max: 100
             }
         },
 };
@@ -91,12 +87,54 @@ if ($conn->connect_error) {
             options: config,
         }
     );
+    
+    const updateData = () => {
+    $.ajax({
+        url: 'updateData.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function (newData) {
+            const tempaddData = newData[0].x;
+
+            // Check if tempaddData is different from the latest x value in temperatureData
+            const tempTemperatureData = temperatureData.length > 0 ? temperatureData[temperatureData.length - 1].x : null;
+            console.log(tempTemperatureData)
+            console.log(newData[0])
+
+            if (tempTemperatureData !== tempaddData) {
+                // Convert the time string to a full timestamp (modify as needed)
+
+                temperatureData.push({
+                    x: tempaddData,
+                    y: newData[0].y // Assuming y is a string, convert it to an integer
+                });
+
+                if (temperatureData.length > 10) {
+                    temperatureData.shift(); // Remove the oldest data point
+                }
+
+                temperatureChart.data.labels = temperatureData.map(dataPoint => dataPoint.x);
+                temperatureChart.data.datasets[0].data = temperatureData.map(dataPoint => ({
+                    x: new Date(dataPoint.x),
+                    y: dataPoint.y
+                }));
+
+                temperatureChart.update();
+                console.log("Data updated");
+            }
+
+            console.log("Last Data:", newData[0].y);
+            console.log("New Data:", temperatureData);
+        },
+        error: function (error) {
+            console.error('Error fetching data:', error);
+        }
+    });
+};
+
+window.onload
+setInterval(updateData, 3000);
+
 </script>
-
-
 </body>
 </html>
-
-
-
-

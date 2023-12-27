@@ -1,32 +1,26 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "tubes";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+include "koneksi.php";
 
 if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 }
 
-// API endpoint to get temperature data
-$result = $conn->query("SELECT * FROM temperature ORDER BY timestamp DESC LIMIT 10");
-$data = [];
+// Fetch the latest data from the database
+$result = $conn->query("SELECT * FROM temperature ORDER BY id DESC LIMIT 1");
+
+$data = array();
 
 while ($row = $result->fetch_assoc()) {
-    // Format the timestamp as a string
-    $row['timestamp'] = $row['timestamp'];
-    
-    $data[] = $row;
+    $data[] = array(
+        'x' => $row['timestamp'],
+        'y' => $row['temperature']
+    );
 }
 
 // Close the database connection
 $conn->close();
 
-// Set the content type to JSON
+// Return the data as JSON with the appropriate Content-Type header
 header('Content-Type: application/json');
-
-// Encode the data as JSON and echo it
 echo json_encode($data);
 ?>
