@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-time Temperature Chart</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style type = "text/css">
         .chartBox {
             width: 700px;
@@ -36,8 +37,44 @@
             );
         }
     ?>
-    <div class = "chartBox">
-        <canvas id="temperatureChart"></canvas>
+    <div class="container">
+        <div class = "row">
+            <div class = "col">
+                <div class = "chartBox">
+                <canvas id="temperatureChart"></canvas>
+                </div>
+            </div>
+            
+            <div class = "col">
+                <div class="container">
+                    <div class="row">
+                    <div class="col-6 col-sm-4 p-3 mb-2 bg-primary text-white text-center"> <p>Status</p> </div>
+                        <div class="w-100 d-none d-md-block"></div>
+                        <div class="col-6 col-sm-4 p-3 mb-2 bg-dark text-white text-center">
+                            <script>
+                                const updateStatus = () => {
+                                    $.ajax({
+                                        url: 'updatestatus.php',
+                                        method: 'GET',
+                                        dataType: 'json',
+                                        success: function (newStatus) {
+                                            $('#statusElement').text(newStatus);
+                                        },
+                                        error: function (error) {
+                                            console.error('Error fetching status:', error);
+                                        }
+                                    });
+                                };
+
+                                // Call updateStatus initially and then set it to run every 3000 milliseconds
+                                
+                            </script>
+                            <p><span id="statusElement">Loading...</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -130,10 +167,10 @@
             console.error('Error fetching data:', error);
         }
     });
-};
-
-window.onload
+    };
 setInterval(updateData, 3000);
+updateStatus();
+setInterval(updateStatus, 3000);
 
 </script>
 </body>
